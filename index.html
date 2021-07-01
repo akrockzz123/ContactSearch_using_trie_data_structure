@@ -1,0 +1,263 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./Trie.js" module></script>
+    <script src="./source.js"></script>
+</head>
+<body>
+
+    <!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css">
+    <script src="Trie.js"></script>
+    <script type="module" src="script.js"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-light " style="font-size: 25px; font-family: sans-serif; background-color: whitesmoke; margin:auto;">
+        <h1 style="left:120px;">Search Box using Trie data staructure</h1>
+    </nav>
+    <div id="container">
+        <div class="text_box" style="display: flex">
+            <form autocomplete="off" style="margin: auto">
+                <h5>Type in the box below...</h5>
+                <br>
+                <div class="autocomplete" style="width:350px;">
+                    <input id="myInput" type="text" placeholder="Search Number...">
+                    <!--<a class="ks-items autocomplete-items" id="list"></a>-->
+                </div>
+                <input type="submit" value="Cancel">
+            </form>
+        </div>
+        <div class="text_box" style="overflow-y: scroll">
+            <span id="info">
+            </span>
+        </div>
+    </div>
+    <div class="center_input">
+        <input type="text" placeholder="Enter contact name, number" id="contact_input">
+        <button class="btn btn-success" id="add">Add Contact</button>
+    </div>
+    <div class="center_input">
+        <input type="text" placeholder="Enter contact number" id="delete_input">
+        <button class="btn btn-danger" id="del">Delete Contact</button>
+    </div>
+    <template>
+        <div class="list-group-item list-group-item-action" style="display: inline-flex">
+            <span class="ks-avatar" style="align-content: center">
+                <img src="./person.png" id="Image" style="margin: 10px; height: 40px; width: 40px">
+            </span>
+            <div>
+                <span id="Name">Eric George</span>
+                <br>
+                <span id="Number">just now</span>
+            </div>
+        </div>
+    </template>
+
+   <script>
+       /*const tr = new Trie();
+       console.log(tr);
+       let init = [
+            ["Aarnav", "123456"],
+            ["Akul", "123456"],
+            ["Shriya", "123654"],
+            ["Prateek", "123465"]
+        ];
+
+        for(let i=0;i<init.length;i++)
+        {
+            tr.add(init[i][1],init[i][0],0);
+        }
+        console.log(tr);
+        tr.findAll()
+       //tr.add();*/
+
+       //onload = function() {
+
+       // import {Trie} from './Trie.js';
+
+onload = function () {
+
+    const templates = document.getElementsByTagName('template')[0];
+    const contact_item = templates.content.querySelector("div");
+    const add = document.getElementById("add");
+    const contact_info = document.getElementById("contact_input");
+    const del = document.getElementById("del");
+    const delete_info = document.getElementById("delete_input");
+    const info = document.getElementById("info");
+    const contact_list = new Trie();
+
+    add.onclick = function () {
+        let details = contact_info.value;
+        details = details.split(',');
+        if(details.length!==2){
+            alert("Incorrectly formatted input");
+            return;
+        }
+        details[0] = details[0].trim();
+        details[1] = details[1].trim();
+        if(details[1].length!==6){
+            alert("Incorrectly formatted input");
+            return;
+        }
+        contact_list.add(details[1], details[0]);
+        info.innerHTML += details + " added to contact list<br>";
+        contact_info.value = "";
+    };
+
+    del.onclick = function () {
+        let details = delete_info.value.trim();
+        if(details.length!==6){
+            alert("Incorrectly formatted input");
+            return;
+        }
+        contact_list.del(details);
+        info.innerHTML += details + " deleted from contact list<br>";
+        delete_info.value = "";
+    };
+
+    let autocomplete = (inp) => {
+
+        /*the autocomplete function takes two arguments,
+         the text field element and an array of possible autocompleted values:*/
+
+        let currentFocus;
+        inp.input = "";
+
+        /*execute a function when someone writes in the text field:*/
+        inp.addEventListener("input", function (e) {
+            let a, //OUTER html: variable for listed content with html-content
+                val = this.value;
+
+            /*close any already open lists of autocompleted values*/
+            closeAllLists();
+
+            if( val.length>=7 )
+                return;
+
+            currentFocus = -1;
+
+            /*create a DIV element that will contain the items (values):*/
+            a = document.createElement("DIV");
+
+            a.setAttribute("id", this.id + "autocomplete-list");
+            a.setAttribute("class", "autocomplete-items list-group text-left");
+
+            /*append the DIV element as a child of the autocomplete container:*/
+            this.parentNode.appendChild(a);
+
+            let arr = [];
+            if(val.length === this.input.length){
+                arr = contact_list.findNext(-2);
+            } else if(val.length < this.input.length){
+                this.input = val;
+                arr = contact_list.findNext(-1);
+            } else{
+                this.input = val;
+                arr = contact_list.findNext(this.input[this.input.length-1]);
+            }
+
+            /*for each item in the array...*/
+            for (let i = 0; i < Math.min(arr.length,6) ; i++) {
+                let item = contact_item.cloneNode(true);
+                // Setting name, message, image to template item
+                item.querySelector('#Name').innerText = arr[i].name;
+                item.querySelector('#Number').innerHTML = "<strong>" + arr[i].number.substr(0, val.length) +
+                                                            "</strong>" + arr[i].number.substr(val.length);
+                item.number = arr[i].number;
+
+                /*execute a function when someone clicks on the item value (DIV element):*/
+                item.addEventListener("click", function (e) {
+                    /*insert the value for the autocomplete text field:*/
+                    inp.value = "";
+                    /*close the list of autocompleted values,
+                     (or any other open lists of autocompleted values:*/
+                    closeAllLists();
+                    alert("Calling "+item.number);
+                });
+                a.appendChild(item);
+            }
+        });
+
+        /*execute a function presses a key on the keyboard:*/
+        inp.addEventListener("keydown", function (e) {
+            let x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode === 40) {
+                /*If the arrow DOWN key is pressed,
+                 increase the currentFocus variable:*/
+                currentFocus++;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode === 38) {
+                //up
+                /*If the arrow UP key is pressed,
+                 decrease the currentFocus variable:*/
+                currentFocus--;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode === 13) {
+                /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    /*and simulate a click on the "active" item:*/
+                    if (x) x[currentFocus*2].click();
+                }
+            }
+        });
+
+        let addActive = (x) => {
+            /*a function to classify an item as "active":*/
+            if (!x) return false;
+            /*start by removing the "active" class on all items:*/
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = x.length - 1;
+            /*add class "autocomplete-active":*/
+            x[currentFocus*2].classList.add("active");
+        };
+
+        let removeActive = (x) => {
+            /*a function to remove the "active" class from all autocomplete items:*/
+            for (let i = 0; i < x.length; i++) {
+                x[i].classList.remove("active");
+            }
+        };
+
+        let closeAllLists = (elmnt) => {
+            /*close all autocomplete lists in the document,
+             except the one passed as an argument:*/
+            const x = document.getElementsByClassName("autocomplete-items");
+            for (let i = 0; i < x.length; i++) {
+                if (elmnt !== x[i]) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        };
+
+        /*execute a function when someone clicks in the document:*/
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+
+    };
+
+    /*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
+    autocomplete(document.getElementById("myInput"));
+};
+   </script>
+   
+</body>
+</html>
